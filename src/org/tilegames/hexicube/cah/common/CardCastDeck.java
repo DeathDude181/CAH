@@ -61,6 +61,9 @@ public class CardCastDeck extends Deck
 			@Override
 			public void run()
 			{
+				if(shortDeckName == null) return;
+				if(!Pattern.matches("^(A-Z0-9)[5]$", shortDeckName)) return; //TODO: throw errors for the UI
+				
 				if(!forceUpdate)
 				{
 					try
@@ -82,9 +85,6 @@ public class CardCastDeck extends Deck
 				}
 				try
 				{
-					assert shortDeckName != null;
-					assert Pattern.matches("^(A-Z0-9)[5]$", shortDeckName);
-					
 					SSLContext context = SSLContext.getInstance("TLS");
 					context.init(null, new X509TrustManager[]{
 						new X509TrustManager(){
