@@ -6,17 +6,17 @@ import org.tilegames.hexicube.cah.common.Card;
 public class DeckPaxEast2013B extends Deck
 {
 	private static final Card[] callCards = new Card[]{
-		new Card("Action stations! Action stations! Set condition one throughout the fleet and brace for ____!", true),
-		new Card("In the final round of this year's Omegathon, Omeganauts must face off in a game of ____.", true),
+		new Card("Action stations! Action stations! Set condition one throughout the fleet and brace for _!"),
+		new Card("In the final round of this year's Omegathon, Omeganauts must face off in a game of _.")
 	}, responseCards = new Card[]{
-		new Card("Loading from a previous save.", false),
-		new Card("Sharpening a foam broadsword on a foam whetstone.", false),
-		new Card("The rocket launcher.", false),
-		new Card("The depression that ensues after catching 'em all.", false),
-		new Card("Violating the First Law of Robotics.", false),
-		new Card("Getting inside the Horadric Cube with a hot babe and pressing the transmute button.", false),
-		new Card("Punching a tree to gather wood.", false),
-		new Card("Spending the year's insulin budget on Warhammer 40k figurines.", false),
+		new Card("Loading from a previous save."),
+		new Card("Sharpening a foam broadsword on a foam whetstone."),
+		new Card("The rocket launcher."),
+		new Card("The depression that ensues after catching 'em all."),
+		new Card("Violating the First Law of Robotics."),
+		new Card("Getting inside the Horadric Cube with a hot babe and pressing the transmute button."),
+		new Card("Punching a tree to gather wood."),
+		new Card("Spending the year's insulin budget on Warhammer 40k figurines.")
 	};
 	
 	@Override

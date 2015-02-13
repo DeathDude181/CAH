@@ -9,12 +9,6 @@ public class Card
 		this.text = text;
 	}
 	
-	public Card(String text, boolean isCallCard)
-	{
-		this.text = text;
-		//TODO: phase this out as isCallCard is useless
-	}
-	
 	public String getCardText()
 	{
 		return text;

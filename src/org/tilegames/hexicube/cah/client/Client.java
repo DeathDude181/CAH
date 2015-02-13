@@ -16,6 +16,12 @@ public class Client
 	public static String username;
 	public static boolean usernameConfirmed;
 	
+	public static PlayType playType;
+	enum PlayType
+	{
+		HOST, JOIN;
+	}
+	
 	public static void main(String[] args)
 	{
 		JFrame frame = new JFrame("Cards Against Humanity");
@@ -48,7 +54,7 @@ public class Client
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				Client.usernameConfirmed = true;
+				usernameConfirmed = true;
 			}
 		});
 		frame.setVisible(true);
@@ -75,12 +81,36 @@ public class Client
 		hostButton.setFont(font);
 		hostButton.setBounds(0, 0, 300, 30);
 		frame.add(hostButton);
+		hostButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				playType = PlayType.HOST;
+			}
+		});
 		JButton joinButton = new JButton("Join a game");
 		joinButton.setFont(font);
 		joinButton.setBounds(0, 35, 300, 30);
 		frame.add(joinButton);
+		joinButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				playType = PlayType.JOIN;
+			}
+		});
 		frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
 		frame.setLocation(oldX, oldY);
 		frame.setVisible(true);
+		while(playType == null) try{Thread.sleep(100);}catch(InterruptedException e){}
+		if(playType == PlayType.HOST)
+		{
+			//TODO: host a game
+			//TODO: UPnP support?
+		}
+		else
+		{
+			//TODO: join game screen
+		}
 	}
 }
