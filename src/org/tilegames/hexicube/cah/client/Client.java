@@ -4,7 +4,6 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.regex.Pattern;
 
 import javax.swing.*;
 
@@ -20,6 +19,12 @@ public class Client
 	enum PlayType
 	{
 		HOST, JOIN;
+	}
+	
+	public static ClientState state = ClientState.INIT;
+	enum ClientState
+	{
+		INIT, CHOOSING_PORT, JOINING_SERVER, IDLE, IN_LOBBY;
 	}
 	
 	public static void main(String[] args)
@@ -40,7 +45,7 @@ public class Client
 		JLabel label = new JLabel("Username");
 		font = label.getFont().deriveFont(label.getFont().getSize2D()*2f);
 		label.setFont(font);
-		label.setBounds(5, 5, 290, 20);
+		label.setBounds(2, 2, 296, 26);
 		frame.add(label);
 		JTextField usernameEntry = new JTextField();
 		usernameEntry.setFont(font);
@@ -77,6 +82,8 @@ public class Client
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 		frame.setLayout(null);
+		frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
+		frame.setLocation(oldX, oldY);
 		JButton hostButton = new JButton("Host a game");
 		hostButton.setFont(font);
 		hostButton.setBounds(0, 0, 300, 30);
@@ -99,18 +106,62 @@ public class Client
 				playType = PlayType.JOIN;
 			}
 		});
-		frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
-		frame.setLocation(oldX, oldY);
 		frame.setVisible(true);
 		while(playType == null) try{Thread.sleep(100);}catch(InterruptedException e){}
+		frame.setVisible(false);
+		oldX = frame.getX();
+		oldY = frame.getY();
+		frame.dispose();
 		if(playType == PlayType.HOST)
 		{
-			//TODO: host a game
+			state = ClientState.CHOOSING_PORT;
+			frame = new JFrame("Cards Against Humanity");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setResizable(false);
+			frame.setLayout(null);
+			frame.setSize(300+insets.left+insets.right, 60+insets.top+insets.bottom);
+			frame.setLocation(oldX, oldY);
+			label = new JLabel("Server port");
+			label.setFont(font);
+			label.setBounds(2, 2, 146, 26);
+			frame.add(label);
+			JTextField serverPort = new JTextField();
+			serverPort.setFont(font);
+			serverPort.setBounds(150, 0, 150, 30);
+			frame.add(serverPort);
+			JButton hostServer = new JButton("Host Server");
+			hostServer.setFont(font);
+			hostServer.setBounds(0, 30, 300, 30);
+			frame.add(hostServer);
+			hostServer.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					Client.state = Client.ClientState.IDLE;
+				}
+			});
+			frame.setVisible(true);
+			while(true)
+			{
+				while(state == ClientState.CHOOSING_PORT) try{Thread.sleep(100);}catch(InterruptedException e){}
+				//TODO: host server
+				state = ClientState.CHOOSING_PORT; //TODO: only on fail
+			}
 			//TODO: UPnP support?
+			//TODO: auto join self
 		}
 		else
 		{
+			state = ClientState.JOINING_SERVER;
+			frame = new JFrame("Cards Against Humanity");
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.setResizable(false);
+			frame.setLayout(null);
+			frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
+			frame.setLocation(oldX, oldY);
 			//TODO: join game screen
 		}
+		//TODO: lobby screen
+		//TODO: game screen
 	}
 }
