@@ -4,8 +4,11 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 
 import javax.swing.*;
+
+import org.tilegames.hexicube.cah.server.Server;
 
 public class Client
 {
@@ -26,6 +29,8 @@ public class Client
 	{
 		INIT, CHOOSING_PORT, JOINING_SERVER, IDLE, IN_LOBBY;
 	}
+	
+	public static ConnectedServer server;
 	
 	public static void main(String[] args)
 	{
@@ -125,7 +130,7 @@ public class Client
 			label.setFont(font);
 			label.setBounds(2, 2, 146, 26);
 			frame.add(label);
-			JTextField serverPort = new JTextField();
+			JTextField serverPort = new JTextField("8181");
 			serverPort.setFont(font);
 			serverPort.setBounds(150, 0, 150, 30);
 			frame.add(serverPort);
@@ -141,14 +146,23 @@ public class Client
 				}
 			});
 			frame.setVisible(true);
-			while(true)
+			while(state != ClientState.IN_LOBBY)
 			{
 				while(state == ClientState.CHOOSING_PORT) try{Thread.sleep(100);}catch(InterruptedException e){}
-				//TODO: host server
-				state = ClientState.CHOOSING_PORT; //TODO: only on fail
+				try
+				{
+					Server s = new Server(Integer.parseInt(serverPort.getText()));
+					server = new ConnectedServer("localhost:"+serverPort.getText());
+					state = ClientState.IN_LOBBY;
+					new Thread(s).start();
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					state = ClientState.CHOOSING_PORT;
+				}
 			}
 			//TODO: UPnP support?
-			//TODO: auto join self
 		}
 		else
 		{
@@ -159,8 +173,42 @@ public class Client
 			frame.setLayout(null);
 			frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
 			frame.setLocation(oldX, oldY);
-			//TODO: join game screen
+			label = new JLabel("Server IP");
+			label.setFont(font);
+			label.setBounds(2, 2, 146, 26);
+			frame.add(label);
+			JTextField serverIP = new JTextField();
+			serverIP.setFont(font);
+			serverIP.setBounds(150, 0, 150, 30);
+			frame.add(serverIP);
+			JButton joinServer = new JButton("Join Server");
+			joinServer.setFont(font);
+			joinServer.setBounds(0, 30, 300, 30);
+			frame.add(joinServer);
+			joinServer.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent e)
+				{
+					Client.state = Client.ClientState.IDLE;
+				}
+			});
+			frame.setVisible(true);
+			while(state != ClientState.IN_LOBBY)
+			{
+				while(state == ClientState.JOINING_SERVER) try{Thread.sleep(100);}catch(InterruptedException e){}
+				try
+				{
+					server = new ConnectedServer(serverIP.getText());
+				}
+				catch(Exception e)
+				{
+					e.printStackTrace();
+					state = ClientState.JOINING_SERVER;
+				}
+				//TODO: join game screen
+			}
 		}
+		new Thread(server).start();
 		//TODO: lobby screen
 		//TODO: game screen
 	}
