@@ -47,6 +47,7 @@ public class CardCastDeck extends Deck
 	private Card[] callCards, responseCards;
 	
 	public boolean deckLoaded, deckValid;
+	public String error;
 	
 	public CardCastDeck(byte[] data)
 	{
@@ -61,8 +62,11 @@ public class CardCastDeck extends Deck
 			@Override
 			public void run()
 			{
-				if(shortDeckName == null) return;
-				if(!Pattern.matches("^(A-Z0-9)[5]$", shortDeckName)) return; //TODO: throw errors for the UI
+				if(shortDeckName == null || !Pattern.matches("^[A-Z0-9]{5}$", shortDeckName))
+				{
+					error = "Code invalid.";
+					return;
+				}
 				
 				if(!forceUpdate)
 				{
@@ -208,11 +212,11 @@ public class CardCastDeck extends Deck
 						if(inLine.equals("")) hitEmptyLine = true;
 					}
 					socket.close();
-					System.out.println("\tDeck data received.");
 					
 					JsonParser parser = new JsonParser();
 					JsonObject deckData = parser.parse(data).getAsJsonObject();
-					if(!deckData.has("code")) throw new Exception("CardCast deck invalid: "+deckData.get("message").getAsString());
+					if(!deckData.has("code")) throw new Exception(deckData.get("message").getAsString());
+					System.out.println("\tDeck data received.");
 					deckName = deckData.get("name").getAsString();
 					shortDeckName = deckData.get("code").getAsString();
 					callCards = new Card[deckData.get("call_count").getAsInt()];
@@ -239,9 +243,9 @@ public class CardCastDeck extends Deck
 						else if(hitEmptyLine2 > 0) hitEmptyLine2++;
 					}
 					socket.close();
-					System.out.println("\tDeck cards received.");
 					
 					JsonObject deckCards = parser.parse(data).getAsJsonObject();
+					System.out.println("\tDeck cards received.");
 					if(callCards.length > 0)
 					{
 						System.out.println("\tParsing call cards...");
@@ -274,11 +278,11 @@ public class CardCastDeck extends Deck
 				}
 				catch(Exception e)
 				{
-					e.printStackTrace();
+					error = e.getMessage();
 				}
 				lastUpdate = new Date();
 				deckLoaded = true;
-				saveToFile();
+				if(deckValid) saveToFile();
 			}
 		}).start();
 	}
