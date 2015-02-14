@@ -261,6 +261,7 @@ public class CardCastDeck extends Deck
 								if((!text.equals("") && !text.equals("_")) || next.equals("")) text += "_";
 								text += next;
 							}
+							//TODO: insert control strings
 							callCards[a] = new Card(text);
 						}
 					}
@@ -271,6 +272,7 @@ public class CardCastDeck extends Deck
 						for(int a = 0; a < responseCards.length; a++)
 						{
 							String text = cards.get(a).getAsJsonObject().get("text").getAsString();
+							//TODO: insert control strings
 							responseCards[a] = new Card(text);
 						}
 					}
