@@ -21,6 +21,6 @@ public class Lobby
 		LOBBY, PICKING_RESPONSES, VIEWING_RESPONSES, ROUND_OVER, GAME_OVER;
 	}
 	
-	public ArrayList<Card> drawPile, discardPile;
-	public ArrayList<Deck> decks;
+	public ArrayList<Deck> allDecks;
+	public PlayingDeck deck;
 }
