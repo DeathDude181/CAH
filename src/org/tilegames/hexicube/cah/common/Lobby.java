@@ -15,6 +15,13 @@ public class Lobby
 		CYCLIC, WINNER, RANDOM;
 	}
 	
+	public WinMode winnerSelectionType;
+	enum WinMode
+	{
+		POINTS, TIME, CARDS;
+	}
+	public int winnerValue;
+	
 	public GameState state;
 	enum GameState
 	{

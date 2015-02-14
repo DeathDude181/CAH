@@ -30,10 +30,11 @@ public class PlayingDeck
 		}
 	}
 	
-	public CardWithID getCallCard()
+	public CardWithID getCallCard(boolean refill)
 	{
 		if(callCards.size() == 0)
 		{
+			if(!refill) return null;
 			while(callCardDiscards.size() > 0) callCards.add(callCardDiscards.remove(0));
 		}
 		CardWithID c = callCards.remove(rand.nextInt(callCards.size()));
