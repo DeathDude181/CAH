@@ -76,6 +76,7 @@ public class CardCastDeck extends Deck
 							in.close();
 							if(deckLoaded && deckValid)
 							{
+								lastUpdate = new Date(f.lastModified());
 								System.out.println("\tDeck already on system.");
 								return;
 							}
