@@ -14,7 +14,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
-public class ServerPlayer extends Player implements Runnable
+public class ServerPlayer implements Runnable
 {
 	private Server server;
 	
@@ -184,32 +184,23 @@ public class ServerPlayer extends Player implements Runnable
 		}
 	}
 	
-	@Override
 	public String getUsername()
 	{
 		return username;
 	}
 	
-	@Override
 	public int getID()
 	{
 		return userID;
 	}
 	
-	@Override
 	public int getNumCards()
 	{
 		return deck.deck.size();
 	}
 	
-	@Override
 	public boolean hasPlayedCards()
 	{
 		return deck.playedCards != null;
-	}
-	
-	public void sendPacket(String data)
-	{
-		out.println(data);
 	}
 }

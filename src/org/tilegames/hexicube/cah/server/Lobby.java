@@ -7,13 +7,12 @@ import java.util.ArrayList;
 
 import org.tilegames.hexicube.cah.common.CardCastDeck;
 import org.tilegames.hexicube.cah.common.Deck;
-import org.tilegames.hexicube.cah.common.Player;
 import org.tilegames.hexicube.cah.common.decks.*;
 
 public class Lobby
 {
 	public int maxPlayers;
-	public ArrayList<Player> players;
+	public ArrayList<ServerPlayer> players;
 	public int currentCzar;
 	public boolean allowJoinsInProgress;
 	
@@ -41,7 +40,7 @@ public class Lobby
 	
 	public Lobby()
 	{
-		players = new ArrayList<Player>();
+		players = new ArrayList<ServerPlayer>();
 		allDecks = new ArrayList<Deck>();
 		allDecks.add(new DeckVersion1());
 		allDecks.add(new DeckVersion2());
