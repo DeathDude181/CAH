@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 
 import javax.swing.*;
@@ -154,9 +156,30 @@ public class Client
 				while(state == ClientState.CHOOSING_PORT) try{Thread.sleep(100);}catch(InterruptedException e){}
 				try
 				{
-					new Thread(new Server(Integer.parseInt(serverPort.getText()))).start();
+					final Server serv = new Server(Integer.parseInt(serverPort.getText()));
+					new Thread(serv).start();
 					server = new ConnectedServer("localhost:"+serverPort.getText());
 					state = ClientState.IN_LOBBY;
+					frame.addWindowListener(new WindowListener(){
+						private Server s = serv;
+						@Override
+						public void windowOpened(WindowEvent e) {}
+						@Override
+						public void windowClosing(WindowEvent e)
+						{
+							serv.closeUPNP();
+						}
+						@Override
+						public void windowClosed(WindowEvent e) {}
+						@Override
+						public void windowIconified(WindowEvent e) {}
+						@Override
+						public void windowDeiconified(WindowEvent e) {}
+						@Override
+						public void windowActivated(WindowEvent e) {}
+						@Override
+						public void windowDeactivated(WindowEvent e) {}
+					});
 				}
 				catch(Exception e)
 				{
