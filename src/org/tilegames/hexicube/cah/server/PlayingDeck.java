@@ -1,7 +1,11 @@
-package org.tilegames.hexicube.cah.common;
+package org.tilegames.hexicube.cah.server;
 
 import java.util.ArrayList;
 import java.util.Random;
+
+import org.tilegames.hexicube.cah.common.Card;
+import org.tilegames.hexicube.cah.common.CardWithID;
+import org.tilegames.hexicube.cah.common.Deck;
 
 public class PlayingDeck
 {

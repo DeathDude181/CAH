@@ -10,13 +10,13 @@ import java.util.Random;
 import org.bitlet.weupnp.GatewayDevice;
 import org.bitlet.weupnp.GatewayDiscover;
 import org.bitlet.weupnp.PortMappingEntry;
-import org.tilegames.hexicube.cah.common.Lobby;
+import org.tilegames.hexicube.cah.common.Player;
 
 public class Server implements Runnable
 {
 	public ServerSocket ss;
 	
-	public ArrayList<ServerPlayer> clients;
+	public ArrayList<PlayerDeck> openDecks;
 	
 	public Lobby lobby;
 	public Random rand;
@@ -27,7 +27,6 @@ public class Server implements Runnable
 	public Server(int port) throws IOException
 	{
 		lobby = new Lobby();
-		clients = new ArrayList<ServerPlayer>();
 		ss = new ServerSocket(port);
 		rand = new Random();
 		
@@ -78,7 +77,7 @@ public class Server implements Runnable
 			{
 				Socket s = ss.accept();
 				ServerPlayer c = new ServerPlayer(s, this);
-				clients.add(c);
+				lobby.players.add(c);
 				new Thread(c).start();
 			}
 			catch(IOException e)
@@ -94,9 +93,9 @@ public class Server implements Runnable
 		while(true)
 		{
 			boolean found = false;
-			for(ServerPlayer sr : clients)
+			for(Player sr : lobby.players)
 			{
-				if(sr.userID == first)
+				if(sr.getID() == first)
 				{
 					found = true;
 					first++;

@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
 
 import org.tilegames.hexicube.cah.common.Deck;
 import org.tilegames.hexicube.cah.common.Player;
@@ -19,8 +18,9 @@ public class ServerPlayer extends Player implements Runnable
 {
 	private Server server;
 	
-	public String username, deckCode;
+	public String username;
 	public int userID;
+	public PlayerDeck deck;
 	
 	private long lastPingSent, lastPingReceived;
 	
@@ -38,24 +38,49 @@ public class ServerPlayer extends Player implements Runnable
 		socket.setSoTimeout(1500);
 		parser = new JsonParser();
 		JsonObject obj = new JsonObject();
-		obj.add("command", new JsonPrimitive("SERVER_INFO")); //TODO: decline if full
+		obj.add("command", new JsonPrimitive("SERVER_INFO"));
 		obj.add("info", new JsonPrimitive("CAH Server"));
 		out.println(obj.toString());
 		obj = parser.parse(in.readLine()).getAsJsonObject();
 		String command = obj.get("command").getAsString();
 		if(!command.equals("CLIENT_INFO")) throw new IOException("Bad client.");
 		username = obj.get("username").getAsString();
-		if(obj.has("deck")) deckCode = obj.get("deck").getAsString();
-		//TODO: decline if in game and lobby prevents joins, unless deck code is valid
+		if(obj.has("deck"))
+		{
+			int deckCode = obj.get("deck").getAsInt();
+			for(PlayerDeck d : server.openDecks)
+			{
+				if(d.deckID == deckCode && d.owner.equals(username))
+				{
+					deck = d;
+					server.openDecks.remove(d);
+					userID = d.id;
+					break;
+				}
+			}
+		}
+		if(deck == null)
+		{
+			boolean canJoin = true;
+			if(server.lobby.players.size() >= server.lobby.maxPlayers) canJoin = false;
+			else if(!server.lobby.allowJoinsInProgress && server.lobby.state != Lobby.GameState.LOBBY) canJoin = false;
+			if(!canJoin)
+			{
+				obj = new JsonObject();
+				obj.add("command", new JsonPrimitive("SERVER_JOIN_PREVENTED"));
+				out.println(obj.toString());
+				return;
+			}
+		}
 		obj = new JsonObject();
 		obj.add("command", new JsonPrimitive("SERVER_ASSIGN_ID"));
-		//TODO: assign previous ID if deck code valid
-		userID = server.getNextID();
+		if(userID == 0) userID = server.getNextID();
 		obj.add("id", new JsonPrimitive(userID));
 		out.println(obj.toString());
 		socket.setSoTimeout(0);
 		lastPingSent = System.nanoTime();
 		lastPingReceived = lastPingSent;
+		if(deck == null) deck = new PlayerDeck(server.rand.nextInt(), username, userID);
 		this.server = server;
 		server.lobby.players.add(this);
 	}
@@ -174,12 +199,17 @@ public class ServerPlayer extends Player implements Runnable
 	@Override
 	public int getNumCards()
 	{
-		return 0; //TODO
+		return deck.deck.size();
 	}
 	
 	@Override
 	public boolean hasPlayedCards()
 	{
-		return false; //TODO
+		return deck.playedCards != null;
+	}
+	
+	public void sendPacket(String data)
+	{
+		out.println(data);
 	}
 }

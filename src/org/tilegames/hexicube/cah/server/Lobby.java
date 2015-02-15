@@ -1,10 +1,13 @@
-package org.tilegames.hexicube.cah.common;
+package org.tilegames.hexicube.cah.server;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import org.tilegames.hexicube.cah.common.CardCastDeck;
+import org.tilegames.hexicube.cah.common.Deck;
+import org.tilegames.hexicube.cah.common.Player;
 import org.tilegames.hexicube.cah.common.decks.*;
 
 public class Lobby

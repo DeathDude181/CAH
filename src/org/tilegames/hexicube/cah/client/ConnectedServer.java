@@ -38,11 +38,7 @@ public class ConnectedServer implements Runnable
 			parser = new JsonParser();
 			JsonObject obj = parser.parse(in.readLine()).getAsJsonObject();
 			String command = obj.get("command").getAsString();
-			if(!command.equals("SERVER_INFO"))
-			{
-				if(command.equals("SERVER_JOIN_PREVENTED")) throw new IOException("Server is full.");
-				throw new IOException("Bad server.");
-			}
+			if(!command.equals("SERVER_INFO")) throw new IOException("Bad server.");
 			if(!obj.get("info").getAsString().equals("CAH Server")) throw new IOException("Bad server.");
 			obj = new JsonObject();
 			obj.add("command", new JsonPrimitive("CLIENT_INFO"));
@@ -52,7 +48,7 @@ public class ConnectedServer implements Runnable
 			command = obj.get("command").getAsString();
 			if(!command.equals("SERVER_ASSIGN_ID"))
 			{
-				if(command.equals("SERVER_JOIN_PREVENTED")) throw new IOException("Server isn't allowing joining games in progress.");
+				if(command.equals("SERVER_JOIN_PREVENTED")) throw new IOException("Server prevented join.");
 				throw new IOException("Bad server.");
 			}
 			Client.playerID = obj.get("id").getAsInt();
