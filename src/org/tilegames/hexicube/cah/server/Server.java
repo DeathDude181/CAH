@@ -5,8 +5,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Random;
 
 import org.bitlet.weupnp.GatewayDevice;
@@ -53,6 +51,7 @@ public class Server implements Runnable
 			if(gd.getSpecificPortMappingEntry(port, "TCP", mapping))
 			{
 				System.out.println("\tPort is already open");
+				this.port = port;
 				return;
 			}
 			System.out.println("\tRequesting port mapping");
@@ -62,6 +61,7 @@ public class Server implements Runnable
 				return;
 			}
 			System.out.println("\tPort mapped!");
+			this.port = port;
 		}
 		catch(Exception e)
 		{
@@ -115,6 +115,7 @@ public class Server implements Runnable
 			try
 			{
 				gd.deletePortMapping(port, "TCP");
+				System.out.println("\tPort mapping removed");
 			}
 			catch(Exception e)
 			{

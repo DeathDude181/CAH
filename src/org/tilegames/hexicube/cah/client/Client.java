@@ -6,7 +6,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.IOException;
 
 import javax.swing.*;
 
@@ -160,14 +159,19 @@ public class Client
 					new Thread(serv).start();
 					server = new ConnectedServer("localhost:"+serverPort.getText());
 					state = ClientState.IN_LOBBY;
+					frame.setVisible(false);
+					oldX = frame.getX();
+					oldY = frame.getY();
+					frame.dispose();
+					frame = new JFrame("Cards Against Humanity");
 					frame.addWindowListener(new WindowListener(){
-						private Server s = serv;
 						@Override
 						public void windowOpened(WindowEvent e) {}
 						@Override
 						public void windowClosing(WindowEvent e)
 						{
 							serv.closeUPNP();
+							System.exit(0);
 						}
 						@Override
 						public void windowClosed(WindowEvent e) {}
@@ -237,10 +241,18 @@ public class Client
 					JOptionPane.showMessageDialog(frame, e.getMessage(), "Unable to join server!", JOptionPane.ERROR_MESSAGE);
 				}
 			}
+			frame.setVisible(false);
+			oldX = frame.getX();
+			oldY = frame.getY();
+			frame.dispose();
+			frame = new JFrame("Cards Against Humanity");
 		}
+		frame.setResizable(false);
+		frame.setLayout(null);
+		frame.setSize(300+insets.left+insets.right, 60+insets.top+insets.bottom);
+		frame.setLocation(oldX, oldY);
+		frame.setVisible(true);
 		new Thread(server).start();
-		frame.setVisible(false);
-		frame.dispose();
 		//TODO: lobby screen
 		//TODO: game screen
 	}
