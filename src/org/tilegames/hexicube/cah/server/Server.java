@@ -10,7 +10,6 @@ import java.util.Random;
 import org.bitlet.weupnp.GatewayDevice;
 import org.bitlet.weupnp.GatewayDiscover;
 import org.bitlet.weupnp.PortMappingEntry;
-import org.tilegames.hexicube.cah.common.Player;
 
 public class Server implements Runnable
 {
@@ -93,7 +92,7 @@ public class Server implements Runnable
 		while(true)
 		{
 			boolean found = false;
-			for(Player sr : lobby.players)
+			for(ServerPlayer sr : lobby.players)
 			{
 				if(sr.getID() == first)
 				{
