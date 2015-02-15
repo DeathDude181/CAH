@@ -5,15 +5,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
+import org.tilegames.hexicube.cah.common.Deck;
 import org.tilegames.hexicube.cah.common.Player;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 
 public class ServerPlayer extends Player implements Runnable
 {
+	private Server server;
+	
 	public String username, deckCode;
 	public int userID;
 	
@@ -51,6 +56,8 @@ public class ServerPlayer extends Player implements Runnable
 		socket.setSoTimeout(0);
 		lastPingSent = System.nanoTime();
 		lastPingReceived = lastPingSent;
+		this.server = server;
+		server.lobby.players.add(this);
 	}
 	
 	@Override
@@ -94,7 +101,24 @@ public class ServerPlayer extends Player implements Runnable
 					}
 					else if(command.equals("CLIENT_REQUEST_FULL_INFO"))
 					{
-						System.out.println("Client wants full info.");
+						System.out.println("Client wants full info, providing.");
+						obj = new JsonObject();
+						obj.add("command", new JsonPrimitive("SERVER_PROVIDE_FULL_INFO"));
+						obj.add("state", new JsonPrimitive(server.lobby.state.toString()));
+						//BEGIN GENERIC DATA
+						obj.add("maxplayers", new JsonPrimitive(server.lobby.maxPlayers));
+						obj.add("allowjoins", new JsonPrimitive(server.lobby.allowJoinsInProgress));
+						obj.add("czarmode", new JsonPrimitive(server.lobby.czarSelectionType.toString()));
+						obj.add("winmode", new JsonPrimitive(server.lobby.winnerSelectionType.toString()));
+						JsonArray activeDecks = new JsonArray();
+						for(Deck d : server.lobby.allDecks)
+						{
+							if(d.isEnabled()) activeDecks.add(new JsonPrimitive(d.getDeckName()));
+						}
+						obj.add("decks", activeDecks);
+						//BEGIN SPECIFIC DATA
+						//TODO
+						out.println(obj.toString());
 					}
 					else if(command.equals("CLIENT_INVALID_COMMAND"))
 					{
@@ -139,5 +163,23 @@ public class ServerPlayer extends Player implements Runnable
 	public String getUsername()
 	{
 		return username;
+	}
+	
+	@Override
+	public int getID()
+	{
+		return userID;
+	}
+	
+	@Override
+	public int getNumCards()
+	{
+		return 0; //TODO
+	}
+	
+	@Override
+	public boolean hasPlayedCards()
+	{
+		return false; //TODO
 	}
 }

@@ -15,20 +15,20 @@ public class Lobby
 	public boolean allowJoinsInProgress;
 	
 	public CzarMode czarSelectionType;
-	enum CzarMode
+	public enum CzarMode
 	{
 		CYCLIC, WINNER, RANDOM;
 	}
 	
 	public WinMode winnerSelectionType;
-	enum WinMode
+	public enum WinMode
 	{
 		POINTS, TIME, CARDS;
 	}
 	public int winnerValue;
 	
 	public GameState state;
-	enum GameState
+	public enum GameState
 	{
 		LOBBY, PICKING_RESPONSES, VIEWING_RESPONSES, ROUND_OVER, GAME_OVER;
 	}
@@ -79,5 +79,11 @@ public class Lobby
 				}
 			}
 		}
+		
+		maxPlayers = 10;
+		state = GameState.LOBBY;
+		czarSelectionType = CzarMode.CYCLIC;
+		winnerSelectionType = WinMode.POINTS;
+		winnerValue = 10;
 	}
 }

@@ -143,6 +143,10 @@ public class ConnectedServer implements Runnable
 					{
 						System.out.println("Server reports invalid command: "+command);
 					}
+					else if(command.equals("SERVER_PROVIDE_FULL_INFO"))
+					{
+						System.out.println("Server provided full info.");
+					}
 					else
 					{
 						System.out.println("Server sent invalid command: "+command);
