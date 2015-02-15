@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.tilegames.hexicube.cah.common.Lobby;
 
@@ -13,13 +14,15 @@ public class Server implements Runnable
 	
 	public ArrayList<ServerPlayer> clients;
 	
-	private Lobby lobby;
+	public Lobby lobby;
+	public Random rand;
 	
 	public Server(int port) throws IOException
 	{
 		lobby = new Lobby();
 		clients = new ArrayList<ServerPlayer>();
 		ss = new ServerSocket(port);
+		rand = new Random();
 	}
 	
 	@Override

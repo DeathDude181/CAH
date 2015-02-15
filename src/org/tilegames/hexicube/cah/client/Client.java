@@ -204,6 +204,7 @@ public class Client
 				try
 				{
 					server = new ConnectedServer(serverIP.getText());
+					state = ClientState.IN_LOBBY;
 				}
 				catch(Exception e)
 				{
@@ -212,7 +213,6 @@ public class Client
 					state = ClientState.JOINING_SERVER;
 					JOptionPane.showMessageDialog(frame, e.getMessage(), "Unable to join server!", JOptionPane.ERROR_MESSAGE);
 				}
-				//TODO: join game screen
 			}
 		}
 		new Thread(server).start();
