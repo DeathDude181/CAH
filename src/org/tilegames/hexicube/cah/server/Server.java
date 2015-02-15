@@ -18,6 +18,7 @@ public class Server implements Runnable
 	public Server(int port) throws IOException
 	{
 		lobby = new Lobby();
+		clients = new ArrayList<ServerPlayer>();
 		ss = new ServerSocket(port);
 	}
 	
@@ -29,7 +30,7 @@ public class Server implements Runnable
 			try
 			{
 				Socket s = ss.accept();
-				ServerPlayer c = new ServerPlayer(s);
+				ServerPlayer c = new ServerPlayer(s, this);
 				clients.add(c);
 				new Thread(c).start();
 			}
@@ -38,5 +39,24 @@ public class Server implements Runnable
 				e.printStackTrace();
 			}
 		}
+	}
+	
+	public int getNextID()
+	{
+		int first = 1;
+		while(true)
+		{
+			boolean found = false;
+			for(ServerPlayer sr : clients)
+			{
+				if(sr.userID == first)
+				{
+					found = true;
+					first++;
+				}
+			}
+			if(!found) break;
+		}
+		return first;
 	}
 }

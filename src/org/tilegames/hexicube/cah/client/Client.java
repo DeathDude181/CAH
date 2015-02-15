@@ -16,6 +16,7 @@ public class Client
 	public static Font font;
 	
 	public static String username;
+	public static int playerID;
 	public static boolean usernameConfirmed;
 	
 	public static PlayType playType;
@@ -34,6 +35,8 @@ public class Client
 	
 	public static void main(String[] args)
 	{
+		font = new Font("Tahoma", Font.BOLD, 24);
+		
 		JFrame frame = new JFrame("Cards Against Humanity");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
@@ -48,7 +51,6 @@ public class Client
 		frame.setVisible(false);
 		frame.setSize(300+insets.left+insets.right, 90+insets.top+insets.bottom);
 		JLabel label = new JLabel("Username");
-		font = label.getFont().deriveFont(label.getFont().getSize2D()*2f);
 		label.setFont(font);
 		label.setBounds(2, 2, 296, 26);
 		frame.add(label);
@@ -134,7 +136,7 @@ public class Client
 			serverPort.setFont(font);
 			serverPort.setBounds(150, 0, 150, 30);
 			frame.add(serverPort);
-			JButton hostServer = new JButton("Host Server");
+			final JButton hostServer = new JButton("Host Server");
 			hostServer.setFont(font);
 			hostServer.setBounds(0, 30, 300, 30);
 			frame.add(hostServer);
@@ -143,6 +145,7 @@ public class Client
 				public void actionPerformed(ActionEvent e)
 				{
 					Client.state = Client.ClientState.IDLE;
+					hostServer.setEnabled(false);
 				}
 			});
 			frame.setVisible(true);
@@ -151,15 +154,16 @@ public class Client
 				while(state == ClientState.CHOOSING_PORT) try{Thread.sleep(100);}catch(InterruptedException e){}
 				try
 				{
-					Server s = new Server(Integer.parseInt(serverPort.getText()));
+					new Thread(new Server(Integer.parseInt(serverPort.getText()))).start();
 					server = new ConnectedServer("localhost:"+serverPort.getText());
 					state = ClientState.IN_LOBBY;
-					new Thread(s).start();
 				}
 				catch(Exception e)
 				{
 					e.printStackTrace();
 					state = ClientState.CHOOSING_PORT;
+					hostServer.setEnabled(true);
+					JOptionPane.showMessageDialog(frame, e.getMessage(), "Unable to start server!", JOptionPane.ERROR_MESSAGE);
 				}
 			}
 			//TODO: UPnP support?
@@ -171,7 +175,7 @@ public class Client
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			frame.setResizable(false);
 			frame.setLayout(null);
-			frame.setSize(300+insets.left+insets.right, 65+insets.top+insets.bottom);
+			frame.setSize(300+insets.left+insets.right, 60+insets.top+insets.bottom);
 			frame.setLocation(oldX, oldY);
 			label = new JLabel("Server IP");
 			label.setFont(font);
@@ -181,7 +185,7 @@ public class Client
 			serverIP.setFont(font);
 			serverIP.setBounds(150, 0, 150, 30);
 			frame.add(serverIP);
-			JButton joinServer = new JButton("Join Server");
+			final JButton joinServer = new JButton("Join Server");
 			joinServer.setFont(font);
 			joinServer.setBounds(0, 30, 300, 30);
 			frame.add(joinServer);
@@ -190,6 +194,7 @@ public class Client
 				public void actionPerformed(ActionEvent e)
 				{
 					Client.state = Client.ClientState.IDLE;
+					joinServer.setEnabled(false);
 				}
 			});
 			frame.setVisible(true);
@@ -203,12 +208,16 @@ public class Client
 				catch(Exception e)
 				{
 					e.printStackTrace();
+					joinServer.setEnabled(true);
 					state = ClientState.JOINING_SERVER;
+					JOptionPane.showMessageDialog(frame, e.getMessage(), "Unable to join server!", JOptionPane.ERROR_MESSAGE);
 				}
 				//TODO: join game screen
 			}
 		}
 		new Thread(server).start();
+		frame.setVisible(false);
+		frame.dispose();
 		//TODO: lobby screen
 		//TODO: game screen
 	}

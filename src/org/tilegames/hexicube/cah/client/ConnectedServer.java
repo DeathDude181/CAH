@@ -28,29 +28,31 @@ public class ConnectedServer implements Runnable
 			socket = new Socket(data[0], Integer.parseInt(data[1]));
 		}
 		else throw new IOException("Bad IP.");
+		socket.setSoTimeout(1500);
 		in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		out = new PrintWriter(socket.getOutputStream(), true);
 		parser = new JsonParser();
-		JsonObject obj = parser.parse(in).getAsJsonObject();
+		JsonObject obj = parser.parse(in.readLine()).getAsJsonObject();
 		String command = obj.get("command").getAsString();
 		if(!command.equals("SERVER_INFO"))
 		{
 			if(command.equals("SERVER_JOIN_PREVENTED")) throw new IOException("Server is full.");
 			throw new IOException("Bad server.");
 		}
-		//TODO: version checking
+		if(!obj.get("info").getAsString().equals("CAH Server")) throw new IOException("Bad server.");
 		obj = new JsonObject();
 		obj.add("command", new JsonPrimitive("CLIENT_INFO"));
 		obj.add("username", new JsonPrimitive(Client.username));
 		out.println(obj.toString());
-		obj = parser.parse(in).getAsJsonObject();
+		obj = parser.parse(in.readLine()).getAsJsonObject();
 		command = obj.get("command").getAsString();
 		if(!command.equals("SERVER_ASSIGN_ID"))
 		{
 			if(command.equals("SERVER_JOIN_PREVENTED")) throw new IOException("Server isn't allowing joining games in progress.");
 			throw new IOException("Bad server.");
 		}
-		//TODO: handshake
+		Client.playerID = obj.get("id").getAsInt();
+		socket.setSoTimeout(0);
 	}
 	
 	@Override
