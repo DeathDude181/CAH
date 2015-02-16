@@ -88,4 +88,12 @@ public class Lobby
 		winnerSelectionType = WinMode.POINTS;
 		winnerValue = 10;
 	}
+	
+	public void tellAllClients(String data)
+	{
+		for(ServerPlayer p : players)
+		{
+			p.packets.add(data);
+		}
+	}
 }

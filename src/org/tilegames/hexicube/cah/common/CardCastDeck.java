@@ -88,205 +88,210 @@ public class CardCastDeck extends Deck
 					}
 					catch(Exception e){}
 				}
-				try
-				{
-					SSLContext context = SSLContext.getInstance("TLS");
-					context.init(null, new X509TrustManager[]{
-						new X509TrustManager(){
-							/*private X509TrustManager parent;
-							private X509Certificate startComCert;
-							
-							private void findParent() throws Exception
-							{
-								TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()); 
-								trustManagerFactory.init(null);
-								
-								for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) { 
-								    if (trustManager instanceof X509TrustManager) {
-								        parent = (X509TrustManager)trustManager;
-								        break;
-								    }
-								}
-							}
-							
-							private void loadStartComCert() throws Exception
-							{
-								InputStream inStream = new FileInputStream("startcom.cert");
-								CertificateFactory cf = CertificateFactory.getInstance("X.509");
-								startComCert = (X509Certificate)cf.generateCertificate(inStream);
-								inStream.close();
-							}*/
-							
-							@Override
-							public X509Certificate[] getAcceptedIssuers()
-							{
-								/*if(parent == null)
-								{
-									try
-									{
-										findParent();
-									}
-									catch(Exception e)
-									{
-										e.printStackTrace();
-									}
-								}
-								if(parent == null) return new X509Certificate[0];
-								if(startComCert == null)
-								{
-									try
-									{
-										loadStartComCert();
-									}
-									catch(Exception e)
-									{
-										e.printStackTrace();
-									}
-								}
-								if(startComCert == null) return parent.getAcceptedIssuers();
-								X509Certificate[] certs = parent.getAcceptedIssuers();
-								X509Certificate[] newCerts = new X509Certificate[certs.length+1];
-								for(int a = 0; a < certs.length; a++) newCerts[a] = certs[a];
-								newCerts[certs.length] = startComCert;
-								return newCerts;*/
-								return new X509Certificate[0];
-							}
-							@Override
-							public boolean isClientTrusted(X509Certificate[] arg0)
-							{
-								/*if(parent == null)
-								{
-									try
-									{
-										findParent();
-									}
-									catch(Exception e)
-									{
-										e.printStackTrace();
-									}
-								}
-								if(parent == null) return true;
-								return parent.isClientTrusted(arg0);*/
-								return true;
-							}
-							@Override
-							public boolean isServerTrusted(X509Certificate[] arg0)
-							{
-								/*if(parent == null)
-								{
-									try
-									{
-										findParent();
-									}
-									catch(Exception e)
-									{
-										e.printStackTrace();
-									}
-								}
-								if(parent == null) return true;
-								return parent.isServerTrusted(arg0);*/
-								return true;
-							}
-						}
-					}, null);
-					SocketFactory socketFactory = context.getSocketFactory();
-					
-					System.out.println("\tConnecting to CardCast...");
-					Socket socket = socketFactory.createSocket("api.cardcastgame.com", 443);
-					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-					out.println("GET /v1/decks/"+shortDeckName+" HTTP/1.1");
-					out.println("Host: api.cardcastgame.com");
-					out.println("Connection: close");
-					out.println("User-Agent: Custom");
-					out.println();
-					out.println();
-					System.out.println("\tRequested deck data...");
-					String data = "";
-					boolean hitEmptyLine = false;
-					while(true)
-					{
-						String inLine = in.readLine();
-						if(inLine == null) break;
-						if(hitEmptyLine) data += inLine;
-						if(inLine.equals("")) hitEmptyLine = true;
-					}
-					socket.close();
-					
-					JsonParser parser = new JsonParser();
-					JsonObject deckData = parser.parse(data).getAsJsonObject();
-					if(!deckData.has("code")) throw new Exception(deckData.get("message").getAsString());
-					System.out.println("\tDeck data received.");
-					deckName = deckData.get("name").getAsString();
-					shortDeckName = deckData.get("code").getAsString();
-					callCards = new Card[deckData.get("call_count").getAsInt()];
-					responseCards = new Card[deckData.get("response_count").getAsInt()];
-					
-					System.out.println("\tRequested deck cards...");
-					socket = socketFactory.createSocket("api.cardcastgame.com", 443);
-					in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-					out = new PrintWriter(socket.getOutputStream(), true);
-					out.println("GET /v1/decks/"+shortDeckName+"/cards HTTP/1.1");
-					out.println("Host: api.cardcastgame.com");
-					out.println("Connection: close");
-					out.println("User-Agent: Custom");
-					out.println();
-					out.println();
-					data = "";
-					int hitEmptyLine2 = 0;
-					while(true)
-					{
-						String inLine = in.readLine();
-						if(inLine == null) break;
-						if(hitEmptyLine2 == 2) data += inLine;
-						if(inLine.equals("")) hitEmptyLine2 = 1;
-						else if(hitEmptyLine2 > 0) hitEmptyLine2++;
-					}
-					socket.close();
-					
-					JsonObject deckCards = parser.parse(data).getAsJsonObject();
-					System.out.println("\tDeck cards received.");
-					if(callCards.length > 0)
-					{
-						System.out.println("\tParsing call cards...");
-						JsonArray cards = deckCards.get("calls").getAsJsonArray();
-						for(int a = 0; a < callCards.length; a++)
-						{
-							JsonArray arr = cards.get(a).getAsJsonObject().get("text").getAsJsonArray();
-							String text = "";
-							Iterator<JsonElement> iter = arr.iterator();
-							while(iter.hasNext())
-							{
-								String next = iter.next().getAsString();
-								if((!text.equals("") && !text.equals("_")) || next.equals("")) text += "_";
-								text += next;
-							}
-							//TODO: insert control strings
-							callCards[a] = new Card(text);
-						}
-					}
-					if(responseCards.length > 0)
-					{
-						System.out.println("\tParsing response cards...");
-						JsonArray cards = deckCards.get("responses").getAsJsonArray();
-						for(int a = 0; a < responseCards.length; a++)
-						{
-							String text = cards.get(a).getAsJsonObject().get("text").getAsString();
-							//TODO: insert control strings
-							responseCards[a] = new Card(text);
-						}
-					}
-					deckValid = true;
-				}
-				catch(Exception e)
-				{
-					error = e.getMessage();
-				}
-				lastUpdate = new Date();
-				deckLoaded = true;
-				if(deckValid) saveToFile();
+				downloadDeck();
 			}
 		}).start();
+	}
+	
+	public void downloadDeck()
+	{
+		try
+		{
+			SSLContext context = SSLContext.getInstance("TLS");
+			context.init(null, new X509TrustManager[]{
+				new X509TrustManager(){
+					/*private X509TrustManager parent;
+					private X509Certificate startComCert;
+					
+					private void findParent() throws Exception
+					{
+						TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm()); 
+						trustManagerFactory.init(null);
+						
+						for (TrustManager trustManager : trustManagerFactory.getTrustManagers()) { 
+						    if (trustManager instanceof X509TrustManager) {
+						        parent = (X509TrustManager)trustManager;
+						        break;
+						    }
+						}
+					}
+					
+					private void loadStartComCert() throws Exception
+					{
+						InputStream inStream = new FileInputStream("startcom.cert");
+						CertificateFactory cf = CertificateFactory.getInstance("X.509");
+						startComCert = (X509Certificate)cf.generateCertificate(inStream);
+						inStream.close();
+					}*/
+					
+					@Override
+					public X509Certificate[] getAcceptedIssuers()
+					{
+						/*if(parent == null)
+						{
+							try
+							{
+								findParent();
+							}
+							catch(Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+						if(parent == null) return new X509Certificate[0];
+						if(startComCert == null)
+						{
+							try
+							{
+								loadStartComCert();
+							}
+							catch(Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+						if(startComCert == null) return parent.getAcceptedIssuers();
+						X509Certificate[] certs = parent.getAcceptedIssuers();
+						X509Certificate[] newCerts = new X509Certificate[certs.length+1];
+						for(int a = 0; a < certs.length; a++) newCerts[a] = certs[a];
+						newCerts[certs.length] = startComCert;
+						return newCerts;*/
+						return new X509Certificate[0];
+					}
+					@Override
+					public boolean isClientTrusted(X509Certificate[] arg0)
+					{
+						/*if(parent == null)
+						{
+							try
+							{
+								findParent();
+							}
+							catch(Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+						if(parent == null) return true;
+						return parent.isClientTrusted(arg0);*/
+						return true;
+					}
+					@Override
+					public boolean isServerTrusted(X509Certificate[] arg0)
+					{
+						/*if(parent == null)
+						{
+							try
+							{
+								findParent();
+							}
+							catch(Exception e)
+							{
+								e.printStackTrace();
+							}
+						}
+						if(parent == null) return true;
+						return parent.isServerTrusted(arg0);*/
+						return true;
+					}
+				}
+			}, null);
+			SocketFactory socketFactory = context.getSocketFactory();
+			
+			System.out.println("\tConnecting to CardCast...");
+			Socket socket = socketFactory.createSocket("api.cardcastgame.com", 443);
+			BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			out.println("GET /v1/decks/"+shortDeckName+" HTTP/1.1");
+			out.println("Host: api.cardcastgame.com");
+			out.println("Connection: close");
+			out.println("User-Agent: Custom");
+			out.println();
+			out.println();
+			System.out.println("\tRequested deck data...");
+			String data = "";
+			boolean hitEmptyLine = false;
+			while(true)
+			{
+				String inLine = in.readLine();
+				if(inLine == null) break;
+				if(hitEmptyLine) data += inLine;
+				if(inLine.equals("")) hitEmptyLine = true;
+			}
+			socket.close();
+			
+			JsonParser parser = new JsonParser();
+			JsonObject deckData = parser.parse(data).getAsJsonObject();
+			if(!deckData.has("code")) throw new Exception(deckData.get("message").getAsString());
+			System.out.println("\tDeck data received.");
+			deckName = deckData.get("name").getAsString();
+			shortDeckName = deckData.get("code").getAsString();
+			callCards = new Card[deckData.get("call_count").getAsInt()];
+			responseCards = new Card[deckData.get("response_count").getAsInt()];
+			
+			System.out.println("\tRequested deck cards...");
+			socket = socketFactory.createSocket("api.cardcastgame.com", 443);
+			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			out = new PrintWriter(socket.getOutputStream(), true);
+			out.println("GET /v1/decks/"+shortDeckName+"/cards HTTP/1.1");
+			out.println("Host: api.cardcastgame.com");
+			out.println("Connection: close");
+			out.println("User-Agent: Custom");
+			out.println();
+			out.println();
+			data = "";
+			int hitEmptyLine2 = 0;
+			while(true)
+			{
+				String inLine = in.readLine();
+				if(inLine == null) break;
+				if(hitEmptyLine2 == 2) data += inLine;
+				if(inLine.equals("")) hitEmptyLine2 = 1;
+				else if(hitEmptyLine2 > 0) hitEmptyLine2++;
+			}
+			socket.close();
+			
+			JsonObject deckCards = parser.parse(data).getAsJsonObject();
+			System.out.println("\tDeck cards received.");
+			if(callCards.length > 0)
+			{
+				System.out.println("\tParsing call cards...");
+				JsonArray cards = deckCards.get("calls").getAsJsonArray();
+				for(int a = 0; a < callCards.length; a++)
+				{
+					JsonArray arr = cards.get(a).getAsJsonObject().get("text").getAsJsonArray();
+					String text = "";
+					Iterator<JsonElement> iter = arr.iterator();
+					while(iter.hasNext())
+					{
+						String next = iter.next().getAsString();
+						if((!text.equals("") && !text.equals("_")) || next.equals("")) text += "_";
+						text += next;
+					}
+					//TODO: insert control strings
+					callCards[a] = new Card(text);
+				}
+			}
+			if(responseCards.length > 0)
+			{
+				System.out.println("\tParsing response cards...");
+				JsonArray cards = deckCards.get("responses").getAsJsonArray();
+				for(int a = 0; a < responseCards.length; a++)
+				{
+					String text = cards.get(a).getAsJsonObject().get("text").getAsString();
+					//TODO: insert control strings
+					responseCards[a] = new Card(text);
+				}
+			}
+			deckValid = true;
+		}
+		catch(Exception e)
+		{
+			error = e.getMessage();
+		}
+		lastUpdate = new Date();
+		deckLoaded = true;
+		if(deckValid) saveToFile();
 	}
 	
 	@Override

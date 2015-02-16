@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
+import org.tilegames.hexicube.cah.common.CardCastDeck;
 import org.tilegames.hexicube.cah.common.Deck;
 
 import com.google.gson.JsonArray;
@@ -26,6 +28,7 @@ public class ServerPlayer implements Runnable
 	private Socket socket;
 	private BufferedReader in;
 	private PrintWriter out;
+	public ArrayList<String> packets;
 	
 	private JsonParser parser;
 	
@@ -81,6 +84,7 @@ public class ServerPlayer implements Runnable
 		lastPingReceived = lastPingSent;
 		if(deck == null) deck = new PlayerDeck(server.rand.nextInt(), username, userID);
 		this.server = server;
+		packets = new ArrayList<String>();
 		server.lobby.players.add(this);
 	}
 	
@@ -91,37 +95,112 @@ public class ServerPlayer implements Runnable
 		{
 			while(true)
 			{
+				while(packets.size() > 0)
+				{
+					out.println(packets.remove(0));
+					lastPingSent = System.nanoTime();
+				}
 				while(in.ready())
 				{
 					JsonObject obj = parser.parse(in.readLine()).getAsJsonObject();
 					String command = obj.get("command").getAsString();
 					if(command.equals("CLIENT_PING"))
 					{
-						System.out.println("Client pinged, responding.");
 						obj = new JsonObject();
 						obj.add("command", new JsonPrimitive("SERVER_PONG"));
 						out.println(obj.toString());
 						lastPingSent = System.nanoTime();
 					}
-					else if(command.equals("CLIENT_PONG"))
-					{
-						System.out.println("Client ponged.");
-					}
+					else if(command.equals("CLIENT_PONG")) {}
 					else if(command.equals("CLIENT_UPDATE_LOBBY"))
 					{
-						System.out.println("Client updating lobby.");
+						//TODO: only host can edit?
+						//TODO: only allow in lobby state
+						String type = obj.get("type").getAsString();
+						if(type.equals("TOGGLE_DECK"))
+						{
+							String deckName = obj.get("deck").getAsString();
+							for(Deck d : server.lobby.allDecks)
+							{
+								if(d.getDeckName().equals(deckName))
+								{
+									d.toggleEnabled();
+									obj = new JsonObject();
+									obj.add("command", new JsonPrimitive("SERVER_UPDATE_LOBBY"));
+									obj.add("type", new JsonPrimitive("SET_DECK"));
+									obj.add("deck", new JsonPrimitive(d.getDeckName()));
+									obj.add("active", new JsonPrimitive(d.isEnabled()));
+									server.lobby.tellAllClients(obj.toString());
+									break;
+								}
+							}
+						}
+						else if(type.equals("ADD_CARDCAST"))
+						{
+							String code = obj.get("code").getAsString();
+							boolean exists = false, valid = false, wasValid = false;
+							CardCastDeck cd = null;
+							for(Deck d : server.lobby.allDecks)
+							{
+								if(d instanceof CardCastDeck && d.getShortDeckName().equals(code))
+								{
+									cd = (CardCastDeck)d;
+									wasValid = cd.deckLoaded && cd.deckValid;
+									if(cd.deckLoaded && !cd.deckValid) cd.downloadDeck();
+									exists = true;
+									valid = cd.deckValid;
+									break;
+								}
+							}
+							obj = new JsonObject();
+							if(exists)
+							{
+								if(valid)
+								{
+									if(!wasValid)
+									{
+										obj.add("command", new JsonPrimitive("SERVER_UPDATE_LOBBY"));
+										obj.add("type", new JsonPrimitive("ADD_DECK"));
+										obj.add("deck", new JsonPrimitive(cd.getDeckName()));
+										obj.add("short", new JsonPrimitive(cd.getShortDeckName()));
+										obj.add("active", new JsonPrimitive(cd.isEnabled()));
+										obj.add("calls", new JsonPrimitive(cd.numCallCards()));
+										obj.add("responses", new JsonPrimitive(cd.numResponseCards()));
+										server.lobby.tellAllClients(obj.toString());
+									}
+									else
+									{
+										obj.add("command", new JsonPrimitive("SERVER_CARDCAST_DECK_EXISTS"));
+										out.println(obj.toString());
+									}
+								}
+								else
+								{
+									obj.add("command", new JsonPrimitive("SERVER_CARDCAST_INVALID"));
+									out.println(obj.toString());
+								}
+							}
+							else
+							{
+								new CardCastDeck(code, false);
+								obj.add("command", new JsonPrimitive("SERVER_REQUESTED_CARDCAST"));
+								out.println(obj.toString());
+							}
+							lastPingSent = System.nanoTime();
+						}
+						else System.out.println("Unknown lobby update type: "+type);
 					}
 					else if(command.equals("CLIENT_PLAY_CARDS"))
 					{
-						System.out.println("Client is playing cards.");
+						System.out.println("Client is playing cards."); //TODO
 					}
 					else if(command.equals("CLIENT_REPICK_CARDS"))
 					{
-						System.out.println("Client wants to repick cards.");
+						System.out.println("Client wants to repick cards."); //TODO
 					}
 					else if(command.equals("CLIENT_CHOOSE_WINNER"))
 					{
-						System.out.println("Client is choosing a winner.");
+						System.out.println("Client is choosing a winner."); //TODO
 					}
 					else if(command.equals("CLIENT_REQUEST_FULL_INFO"))
 					{
@@ -137,12 +216,19 @@ public class ServerPlayer implements Runnable
 						JsonArray activeDecks = new JsonArray();
 						for(Deck d : server.lobby.allDecks)
 						{
-							if(d.isEnabled()) activeDecks.add(new JsonPrimitive(d.getDeckName()));
+							JsonObject obj2 = new JsonObject();
+							obj2.add("name", new JsonPrimitive(d.getDeckName()));
+							obj2.add("short", new JsonPrimitive(d.getShortDeckName()));
+							obj2.add("active", new JsonPrimitive(d.isEnabled()));
+							obj2.add("calls", new JsonPrimitive(d.numCallCards()));
+							obj2.add("responses", new JsonPrimitive(d.numResponseCards()));
+							activeDecks.add(obj2);
 						}
 						obj.add("decks", activeDecks);
 						//BEGIN SPECIFIC DATA
 						//TODO
 						out.println(obj.toString());
+						lastPingSent = System.nanoTime();
 					}
 					else if(command.equals("CLIENT_INVALID_COMMAND"))
 					{

@@ -96,8 +96,20 @@ public class ConnectedServer implements Runnable
 					{
 						System.out.println("Server ponged.");
 					}
-					else if(command.equals("SERVER_LOBBY_INFO_CHANGE"))
+					else if(command.equals("SERVER_UPDATE_LOBBY"))
 					{
+						String type = obj.get("type").getAsString();
+						if(type.equals("SET_DECK"))
+						{
+							String deckName = obj.get("deck").getAsString();
+							//TODO: iterate over local lobby decks
+						}
+						else if(type.equals("ADD_DECK"))
+						{
+							String deckName = obj.get("deck").getAsString();
+							//TODO: add deck
+						}
+						else System.out.println("Unknown lobby change type: "+type);
 						System.out.println("Server reported lobby changes.");
 					}
 					else if(command.equals("SERVER_DEAL_CARDS"))
