@@ -133,7 +133,7 @@ public class Client
 			label.setFont(font);
 			label.setBounds(2, 2, 146, 26);
 			frame.add(label);
-			JTextField serverPort = new JTextField("8181");
+			final JTextField serverPort = new JTextField("8181");
 			serverPort.setFont(font);
 			serverPort.setBounds(150, 0, 150, 30);
 			frame.add(serverPort);
@@ -184,6 +184,16 @@ public class Client
 						@Override
 						public void windowDeactivated(WindowEvent e) {}
 					});
+					if(serv.dedicatedIP != null)
+					{
+						new Thread(new Runnable(){
+							@Override
+							public void run()
+							{
+								JOptionPane.showMessageDialog(null, "Give other players this IP to join:\n"+serv.dedicatedIP+":"+serverPort.getText(), "External IP", JOptionPane.INFORMATION_MESSAGE);
+							}
+						}).start();
+					}
 				}
 				catch(Exception e)
 				{
@@ -193,7 +203,6 @@ public class Client
 					JOptionPane.showMessageDialog(frame, e.getMessage(), "Unable to start server!", JOptionPane.ERROR_MESSAGE);
 				}
 			}
-			//TODO: UPnP support?
 		}
 		else
 		{

@@ -22,6 +22,7 @@ public class Server implements Runnable
 	
 	private GatewayDevice gd;
 	private int port;
+	public String dedicatedIP;
 	
 	public Server(int port) throws IOException
 	{
@@ -50,6 +51,7 @@ public class Server implements Runnable
 			{
 				System.out.println("\tPort is already open");
 				this.port = port;
+				dedicatedIP = externalIP;
 				return;
 			}
 			System.out.println("\tRequesting port mapping");
@@ -60,6 +62,7 @@ public class Server implements Runnable
 			}
 			System.out.println("\tPort mapped!");
 			this.port = port;
+			dedicatedIP = externalIP;
 		}
 		catch(Exception e)
 		{
