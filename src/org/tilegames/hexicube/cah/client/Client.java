@@ -16,6 +16,7 @@ import org.tilegames.hexicube.cah.server.Server;
 public class Client
 {
 	public static Insets insets;
+	public static JFrame frame;;
 	public static Font font;
 	
 	public static String username;
@@ -40,7 +41,7 @@ public class Client
 	{
 		font = new Font("Tahoma", Font.BOLD, 24);
 		
-		JFrame frame = new JFrame("Cards Against Humanity");
+		frame = new JFrame("Cards Against Humanity");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setResizable(false);
 		frame.setLayout(null);
@@ -194,7 +195,7 @@ public class Client
 							@Override
 							public void run()
 							{
-								JOptionPane.showMessageDialog(null, "Unable to open port via UPnP.\nPlayers may not be able to join!", "UPnP failure", JOptionPane.WARNING_MESSAGE);
+								JOptionPane.showMessageDialog(frame, "Unable to open port via UPnP.\nPlayers may not be able to join!", "UPnP failure", JOptionPane.WARNING_MESSAGE);
 							}
 						}).start();
 					}
@@ -204,7 +205,7 @@ public class Client
 							@Override
 							public void run()
 							{
-								JOptionPane.showMessageDialog(null, "Give other players this IP to join:\n"+serv.dedicatedIP+":"+serverPort.getText(), "External IP", JOptionPane.INFORMATION_MESSAGE);
+								JOptionPane.showMessageDialog(frame, "Give other players this IP to join:\n"+serv.dedicatedIP+":"+serverPort.getText(), "External IP", JOptionPane.INFORMATION_MESSAGE);
 							}
 						}).start();
 					}
@@ -272,11 +273,38 @@ public class Client
 		}
 		frame.setResizable(false);
 		frame.setLayout(null);
-		frame.setSize(300+insets.left+insets.right, 60+insets.top+insets.bottom);
-		frame.setLocation(oldX, oldY);
+		//old size: 300x60
+		frame.setSize(800+insets.left+insets.right, 480+insets.top+insets.bottom);
+		frame.setLocation(oldX-250, oldY-210);
 		frame.setVisible(true);
 		new Thread(server).start();
-		//TODO: lobby screen
-		//TODO: game screen
+	}
+	
+	public static void prepLobbyScreen()
+	{
+		needsNewScreen = true;
+	}
+	
+	public static void prepGameScreen()
+	{
+		needsNewScreen = true;
+	}
+	
+	private static boolean needsNewScreen;
+	public static void makeNewScreen()
+	{
+		if(needsNewScreen)
+		{
+			needsNewScreen = false;
+			frame.setVisible(false);
+			int oldX = frame.getX();
+			int oldY = frame.getY();
+			frame.dispose();
+			frame = new JFrame("Cards Against Humanity");
+			frame.setSize(800+insets.left+insets.right, 480+insets.top+insets.bottom);
+			frame.setLocation(oldX, oldY);
+			frame.setResizable(false);
+			frame.setLayout(null);
+		}
 	}
 }

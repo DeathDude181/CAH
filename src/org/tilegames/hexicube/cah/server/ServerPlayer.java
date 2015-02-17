@@ -213,6 +213,7 @@ public class ServerPlayer implements Runnable
 						obj.add("allowjoins", new JsonPrimitive(server.lobby.allowJoinsInProgress));
 						obj.add("czarmode", new JsonPrimitive(server.lobby.czarSelectionType.toString()));
 						obj.add("winmode", new JsonPrimitive(server.lobby.winnerSelectionType.toString()));
+						obj.add("winval", new JsonPrimitive(server.lobby.winnerValue));
 						JsonArray activeDecks = new JsonArray();
 						for(Deck d : server.lobby.allDecks)
 						{
@@ -225,6 +226,15 @@ public class ServerPlayer implements Runnable
 							activeDecks.add(obj2);
 						}
 						obj.add("decks", activeDecks);
+						JsonArray players = new JsonArray();
+						for(ServerPlayer sp : server.lobby.players)
+						{
+							JsonObject obj2 = new JsonObject();
+							obj2.add("name", new JsonPrimitive(sp.username));
+							obj2.add("id", new JsonPrimitive(sp.userID));
+							if(server.lobby.state != Lobby.GameState.LOBBY) obj2.add("score", new JsonPrimitive(sp.deck.points));
+						}
+						obj.add("players", players);
 						//BEGIN SPECIFIC DATA
 						//TODO
 						out.println(obj.toString());

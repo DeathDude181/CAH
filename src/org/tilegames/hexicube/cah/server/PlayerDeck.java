@@ -7,7 +7,7 @@ import org.tilegames.hexicube.cah.common.CardWithID;
 public class PlayerDeck
 {
 	public ArrayList<CardWithID> deck, playedCards;
-	public int deckID, id;
+	public int deckID, id, points;
 	public String owner;
 	
 	public PlayerDeck(int id, String owner, int player)
