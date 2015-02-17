@@ -184,7 +184,17 @@ public class Client
 						@Override
 						public void windowDeactivated(WindowEvent e) {}
 					});
-					if(serv.dedicatedIP != null)
+					if(serv.dedicatedIP == null)
+					{
+						new Thread(new Runnable(){
+							@Override
+							public void run()
+							{
+								JOptionPane.showMessageDialog(null, "Unable to open port via UPnP.\nPlayers may not be able to join!", "UPnP failure", JOptionPane.WARNING_MESSAGE);
+							}
+						}).start();
+					}
+					else
 					{
 						new Thread(new Runnable(){
 							@Override
